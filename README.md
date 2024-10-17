@@ -15,11 +15,12 @@ Give the Ansible-Master node the 'EC2FullAccess' permission.
 - Update the server:
 ```bash
 sudo yum update -y
+```
 
 - Check the version of Python. If it is not version 3 or above, run the following command to install it:
 ```bash
 python3 --version
 sudo yum install python3 -y
-
+```
 - 
 
