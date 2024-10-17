@@ -93,3 +93,16 @@ ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --graph
 ```bash
 ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=workernode.pem --user ec2-user
 ```
+- If you notice that only one server is pinging, and it takes time to receive a ping from the other instance, type “yes” and hit enter to solve the issue. To avoid similar issues in the future, navigate to the ansible.cfg file and uncomment host_key_checking = False. This will instruct Ansible to skip host key verification for your instances.
+
+**13. Rerun the Test Code:**
+- You should see successful ping responses.
+![image](https://github.com/user-attachments/assets/681a03c5-586f-4374-8d48-1f133f131e04)
+
+**14. Create and Execute a Playbook:**
+- At the host level of the playbook, specify the tag group under which your desired instances are located (e.g., ```tag_Env_Dev```):
+```bash
+sudo nano test.yml
+```
+**Content:**
+
