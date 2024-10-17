@@ -141,6 +141,7 @@ ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml 
 ```
 **15. Fixing Potential Errors:**
 If you encounter an error message like, “ERROR! The ec2 dynamic inventory plugin requires boto3 and botocore,” it may be due to Ansible using Python 2.7 instead of Python 3.x. To resolve this:
+
 **Fix Python Version Warning:**
    - Upgrade Python:
      ```bash
