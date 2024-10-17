@@ -25,6 +25,7 @@ sudo yum install python3 -y
 ``bash
 sudo yum install python3-pip -y
 ```
+
 **4. Create Directory for Inventory:**
 
 
