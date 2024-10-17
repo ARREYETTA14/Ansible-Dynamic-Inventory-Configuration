@@ -135,7 +135,7 @@ sudo nano test.yml
 ```bash
 ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
 ```
-**or**
+Or:
 ```bash
 ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
 ```
