@@ -1,5 +1,5 @@
 # Ansible-Dynamic-Inventory-Configuration
-Dynamic Inventory configuration in AWS
+Dynamic Inventory Configuration in AWS
 
 **1. Create Instances:**
 
