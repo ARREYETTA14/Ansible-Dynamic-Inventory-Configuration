@@ -31,7 +31,12 @@ sudo yum install python3-pip -y
 sudo mkdir -p /opt/ansible/inventory
 cd /opt/ansible/inventory
 ```
-**5. Add the Following Code to aws_ec2.yaml:**
+**5. Create the aws_ec2.yaml File:**
+- In this directory, create the aws_ec2.yaml file to filter required instances for task execution:
+```bash
+sudo nano aws_ec2.yaml
+```
+**6. Add the Following Code to aws_ec2.yaml:**
 ```yaml
 ---
 plugin: amazon.aws.aws_ec2
@@ -53,5 +58,26 @@ hostnames:
 compose:
   # Set ansible_host to use the private IP for SSH connections.
   ansible_host: private_ip_address
+```
+**7. Go Back to Home Directory:**
+```bash
+cd
+```
+**8. Install Boto and Boto3:**
+```bash
+pip3 install boto3 -y
+pip3 install botocore
+```
+**9. Install the Amazon AWS Collection:**
+```bash
+ansible-galaxy collection install amazon.aws
+```
+**10. Install Ansible:**
+```bash
+sudo amazon-linux-extras install ansible2 -y
+```
+**11. Test AWS Environment Access:**
+```bash
+ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --list
 ```
 
