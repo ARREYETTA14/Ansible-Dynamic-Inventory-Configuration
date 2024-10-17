@@ -3,13 +3,13 @@ Dynamic Inventory Configuration in AWS
 
 **1. Create Instances:**
 - Launch three instances: one named “Ansible-Master,” the second “Worker-node-2,” and the third “Worker-node-3.”
-- Add additional tags to the worker nodes as Env: Dev.
+- Add additional tags to the worker nodes as ```Env: Dev```.
   **Note:** Ensure the Security Group (SG) of the worker nodes allows TCP traffic from the SG of the Ansible-Master node.
 
 ![image](https://github.com/user-attachments/assets/4cf67fb4-5e01-4b05-9d4d-9fc7af5665bb)
 
 **2. Assign Permissions:**
-Give the Ansible-Master node the 'EC2FullAccess' permission.
+Give the Ansible-Master node the '``EC2FullAccess``' permission.
 
 **3. SSH into Ansible-Master:**
 - Update the server:
@@ -31,12 +31,12 @@ sudo yum install python3-pip -y
 sudo mkdir -p /opt/ansible/inventory
 cd /opt/ansible/inventory
 ```
-**5. Create the aws_ec2.yaml File:**
-- In this directory, create the aws_ec2.yaml file to filter required instances for task execution:
+**5. Create the ```aws_ec2.yaml``` File:**
+- In this directory, create the ```aws_ec2.yaml``` file to filter required instances for task execution:
 ```bash
 sudo nano aws_ec2.yaml
 ```
-**6. Add the Following Code to aws_ec2.yaml:**
+**6. Add the Following Code to ```aws_ec2.yaml```:**
 ```yaml
 ---
 plugin: amazon.aws.aws_ec2
@@ -89,11 +89,11 @@ ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --graph
 
 **12. Ping Instances:**
 
-- Create a keypair file, paste in the keypairs created for your worker nodes, and run the following command (assuming you created a keypair file called workernode.pem):
+- Create a keypair file, paste in the keypairs created for your worker nodes, and run the following command (assuming you created a keypair file called ```workernode.pem```):
 ```bash
 ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=workernode.pem --user ec2-user
 ```
-- If you notice that only one server is pinging, and it takes time to receive a ping from the other instance, type “yes” and hit enter to solve the issue. To avoid similar issues in the future, navigate to the ansible.cfg file and uncomment host_key_checking = False. This will instruct Ansible to skip host key verification for your instances.
+- If you notice that only one server is pinging, and it takes time to receive a ping from the other instance, type “yes” and hit enter to solve the issue. To avoid similar issues in the future, navigate to the ```ansible.cfg``` file and uncomment ```host_key_checking = False```. This will instruct Ansible to skip host key verification for your instances.
 
 **13. Rerun the Test Code:**
 - You should see successful ping responses.
@@ -165,7 +165,7 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
      sudo python3.8 -m pip install --upgrade pip
      ```
    - Ensure Ansible Uses Python 3.8:
-     You may need to create or update the Python interpreter in your ansible.cfg file:
+     You may need to create or update the Python interpreter in your ```ansible.cfg``` file:
      ```ini
      [defaults]
      interpreter_python = /usr/bin/python3.8
