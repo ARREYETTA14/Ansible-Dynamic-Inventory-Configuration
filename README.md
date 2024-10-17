@@ -105,4 +105,119 @@ ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=wor
 sudo nano test.yml
 ```
 **Content:**
+```yaml
+---
+- name: Install and Configure Apache
+  hosts: tag_Env_Dev
+  become: yes
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+
+    - name: Install the latest version of Apache
+      ansible.builtin.yum:
+        name: httpd
+        state: latest
+
+    - name: Start httpd or Apache
+      ansible.builtin.systemd:
+        state: started
+        name: httpd
+
+    - name: Content to test
+      copy:
+        content: "This is working perfectly well!!!"
+        dest: /var/www/html/index.html
+```
+**Execute the Playbook:**
+```bash
+ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
+```
+**or**
+```bash
+ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
+```
+**15. Fixing Potential Errors:**
+If you encounter an error message like, “ERROR! The ec2 dynamic inventory plugin requires boto3 and botocore,” it may be due to Ansible using Python 2.7 instead of Python 3.x. To resolve this:
+**- Fix Python Version Warning:**
+   - Upgrade Python:
+     ```bash
+     sudo yum update -y
+     sudo amazon-linux-extras enable python3.8
+     sudo yum install python3.8
+     ```
+   - Verify the Installation:
+     ```bash
+     python3.8 --version
+     ```
+   - Set Python 3.8 as Default (if needed):
+     ```bash
+     sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+     sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2
+     sudo alternatives --config python3
+     ```
+   - Update pip for Python 3.8:
+     ```bash
+     sudo python3.8 -m ensurepip --upgrade
+     sudo python3.8 -m pip install --upgrade pip
+     ```
+   - Ensure Ansible Uses Python 3.8:
+     You may need to create or update the Python interpreter in your ansible.cfg file:
+     ```ini
+     [defaults]
+     interpreter_python = /usr/bin/python3.8
+     ```
+**- Upgrade Ansible to Resolve AWS Collection Compatibility Warning:**
+   - Uninstall the Old Version of Ansible:
+     ```bash
+     sudo python3 -m pip uninstall ansible
+     ```
+   - Install the Latest Version of Ansible Using pip:
+     ```bash
+     sudo python3.8 -m pip install ansible
+     ```
+   - Verify the Upgrade:
+     ```bash
+     ansible --version
+     ```
+**- Upgrade boto3 and botocore to Recommended Versions:**
+   - Upgrade Both Packages Using pip for Python 3.8:
+     ```bash
+     sudo python3.8 -m pip install --upgrade boto3 botocore
+     ```
+   - Verify the Version:
+     ```bash
+     python3.8 -m pip show boto3 botocore
+     ```
+**- Verify Everything is Set Correctly:**
+   - After making these upgrades, run the following commands:
+     Check Ansible version:
+     ```bash
+     ansible --version
+     ```
+     Check Python version:
+     ```bash
+     python3 --version
+     ```
+     Check boto3 and botocore versions:
+     ```bash
+     python3.8 -m pip show boto3 botocore
+     ```
+**16. Test Your Playbooks once again:**
+```bash
+ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
+```
+Or:
+```bash
+ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
+```
+**17. Verify Playbook Execution in Workernodes:**
+- Lastly, test if your playbook was executed in the worker nodes by copying the public IP addresses of the nodes and pasting them into a web browser.
+  ![image](https://github.com/user-attachments/assets/06b3edf5-94f3-49cb-9c18-c23f29fd6f14)    ![image](https://github.com/user-attachments/assets/de12b036-5d6c-4920-83f7-cf7b56888e59)
+
+
+
+
 
