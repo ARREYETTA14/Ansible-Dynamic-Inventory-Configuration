@@ -80,4 +80,16 @@ sudo amazon-linux-extras install ansible2 -y
 ```bash
 ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --list
 ```
+![image](https://github.com/user-attachments/assets/47dae9a0-90a9-49ec-8c7e-a8c2b98b0790)
 
+```bash
+ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --graph
+```
+![image](https://github.com/user-attachments/assets/cfb15e6c-31ba-4d80-a63c-8c23c01d2907)
+
+**12. Ping Instances:**
+
+- Create a keypair file, paste in the keypairs created for your worker nodes, and run the following command (assuming you created a keypair file called workernode.pem):
+```bash
+ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=workernode.pem --user ec2-user
+```
