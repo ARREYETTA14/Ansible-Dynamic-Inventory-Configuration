@@ -216,7 +216,8 @@ ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml 
 ```
 **17. Verify Playbook Execution in Workernodes:**
 - Lastly, test if your playbook was executed in the worker nodes by copying the public IP addresses of the nodes and pasting them into a web browser.
-  ![image](https://github.com/user-attachments/assets/06b3edf5-94f3-49cb-9c18-c23f29fd6f14) , ![image](https://github.com/user-attachments/assets/de12b036-5d6c-4920-83f7-cf7b56888e59)
+  ![image](https://github.com/user-attachments/assets/06b3edf5-94f3-49cb-9c18-c23f29fd6f14) 
+  ![image](https://github.com/user-attachments/assets/de12b036-5d6c-4920-83f7-cf7b56888e59)
 
 
 
