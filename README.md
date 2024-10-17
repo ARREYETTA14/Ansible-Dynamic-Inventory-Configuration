@@ -141,7 +141,7 @@ ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml 
 ```
 **15. Fixing Potential Errors:**
 If you encounter an error message like, “ERROR! The ec2 dynamic inventory plugin requires boto3 and botocore,” it may be due to Ansible using Python 2.7 instead of Python 3.x. To resolve this:
-**- Fix Python Version Warning:**
+**Fix Python Version Warning:**
    - Upgrade Python:
      ```bash
      sudo yum update -y
@@ -169,7 +169,7 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
      [defaults]
      interpreter_python = /usr/bin/python3.8
      ```
-**- Upgrade Ansible to Resolve AWS Collection Compatibility Warning:**
+**Upgrade Ansible to Resolve AWS Collection Compatibility Warning:**
    - Uninstall the Old Version of Ansible:
      ```bash
      sudo python3 -m pip uninstall ansible
@@ -182,7 +182,7 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
      ```bash
      ansible --version
      ```
-**- Upgrade boto3 and botocore to Recommended Versions:**
+**Upgrade boto3 and botocore to Recommended Versions:**
    - Upgrade Both Packages Using pip for Python 3.8:
      ```bash
      sudo python3.8 -m pip install --upgrade boto3 botocore
@@ -191,7 +191,7 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
      ```bash
      python3.8 -m pip show boto3 botocore
      ```
-**- Verify Everything is Set Correctly:**
+**Verify Everything is Set Correctly:**
    - After making these upgrades, run the following commands:
      Check Ansible version:
      ```bash
