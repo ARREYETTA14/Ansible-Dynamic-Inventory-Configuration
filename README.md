@@ -1,5 +1,5 @@
 # Ansible-Dynamic-Inventory-Configuration
-Dynamic Inventory Configuration in AWS
+Dynamic Inventory Configuration in AWS *(3 Amazon Linux 2 instances: 1 Master Node and 2 Worker Nodes)*
 
 **1. Create Instances:**
 - Launch three instances: one named “Ansible-Master,” the second “Worker-node-2,” and the third “Worker-node-3.”
