@@ -22,10 +22,36 @@ python3 --version
 sudo yum install python3 -y
 ```
 - Install PIP:
-``bash
+```bash
 sudo yum install python3-pip -y
 ```
-
 **4. Create Directory for Inventory:**
-
+- Create a directory where the inventory file will reside:
+```bash
+sudo mkdir -p /opt/ansible/inventory
+cd /opt/ansible/inventory
+```
+**5. Add the Following Code to aws_ec2.yaml:**
+```yaml
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - sa-east-1
+keyed_groups:
+  # Create groups based on the value of the 'Env' tag.
+  - key: tags.Env
+    prefix: tag_Env_
+    separator: ""
+filters:
+  # Filter instances that have the 'Env' tag (prod, dev, etc.).
+  tag:Env:
+    - 'Dev' 
+hostnames:
+  # Define the hostname precedence (use instance's private IP or tag name as hostname).
+  - tag:Name
+  - private-ip-address
+compose:
+  # Set ansible_host to use the private IP for SSH connections.
+  ansible_host: private_ip_address
+```
 
