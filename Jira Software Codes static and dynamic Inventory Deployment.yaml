@@ -1,0 +1,425 @@
+#########################################################################################################
+################################# STATIC INVENTORY ######################################################
+#########################################################################################################
+
+# steps to accomplish this task
+
+1. start 3 instnces, label one as "Ansible_control", and the other two as "worker_node_1" and "worker_node_2" respectively preferably t3.medium
+2. log into the ansible node and the other nodes then run the following commands:
+
+# login as root user (works for 2023)
+* sudo su -
+
+# change the name of the servers (works for 2023)
+* nano /etc/hostname # label the nodes accordingly "ansible_control", "worker_node_1" 
+* reboot # reboots the servers 
+
+# create common user across the nodes (works for 2023)
+* useradd ansible
+* passwd ansible # pass a password
+* sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config # change password authentication permission to "yes"
+* uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory 
+* sudo systemctl restart sshd # Restart sshd service
+* Add ansible to sudoers group in the directory /etc/sudoers using nano /etc/sudoers then fit in 
+ansible ALL=(ALL) NOPASSWD: ALL in the "no password authentication" line and also ass ansible ALL=(ALL)  ALL
+in the line that line that says "root user runs commands anywhere" 
+* Once you are done doing all these in all 3 nodes, try ssh into workernodes via the ansible user in control node by using
+this command "ssh ansible@privateIP"- first, switch the ansible user "sudo su ansible"
+
+# Create a keypair in ansible control node and copy in the worker nodes (works for 2023 with few changes)
+* while in control node, switch to ansible user then home directory using 
+sudo su ansible 
+cd ~
+* ssh-keygen -t rsa # generate keypair
+* sudo chmod 700 /home/ansible/.ssh # gives permission to .ssh file to copy it to worker_node
+* ssh-copy-id ansible@private_ip # do this for each worker_node ip to copy the keypair to the node
+* Try ssh ansible@private_ip # checks if you can ssh to worker nodes without key pair
+* sudo dnf install -y ansible-core # for Amzon 2023
+* ansible --version # check if ansible is installed
+
+### create an inventory file called hosts in the /etc/ansible directory of root and put the following code
+[webservers]
+10.0.1.10 ## pass the private or public ip of worker node(s)
+
+[webservers:vars]
+ansible_user=ansible
+ansible_ssh_private_key_file=/home/ansible/.ssh/id_rsa # make sure it is in same directory where you keypair was generated
+
+### switch as ansible user at home directory and ping the webserver
+ansible all -m ping
+
+# install docker in worker nodes - you login to the worker nodes via the ansible control node 
+#* sudo amazon-linux-extras install docker -y # install docker
+* sudo dnf install -y docker # amazon linux 2023
+
+* sudo service docker start # start docker
+* sudo systemctl start docker # start docker for amazon linux 2023
+
+* sudo systemctl enable docker # enable docker
+* sudo systemctl status docker # ensure docker runs
+* sudo docker run hello-world # verify if docker is install
+
+### In control, update pip and ansible dependencies
+sudo dnf install python3-pip -y
+pip3 install --upgrade pip setuptools wheel
+
+###### Update the ansible inventory in control
+* Go to home directory of ansible user, cd /etc/ansible/ then ls and when you see "hosts",
+sudo nano hosts, at example 2 section uncomment "[webservers]" then pass the private ips of the worker_nodes beneath.
+cd /etc/ansible/
+sudo nano hosts
+
+# Create directory and create a file and put in below docker file in control node
+mkdir ~/jira-docker # make a directory called jira-docker in home directory
+cd ~/jira-docker # navigate to the directory
+sudo nano docker-compose.yml # create a file called docker-compose.yml and paste in docker compose code
+
+#copy below code in the file
+Docker Compose file Code:
+
+version: '3'
+services:
+  jira:
+    image: atlassian/jira-software:9.9.1  # Pull the latest Jira Software image
+    ports:
+      - "8080:8080"
+    volumes:
+      - jira-data:/var/atlassian/jira
+    environment:
+      - ATL_JDBC_URL=jdbc:postgresql://db/jiradb
+      - ATL_JDBC_USER=jirauser
+      - ATL_JDBC_PASSWORD=jirapassword
+
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_DB=jiradb
+      - POSTGRES_USER=jirauser
+      - POSTGRES_PASSWORD=jirapassword
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  jira-data:
+  db-data:
+
+or the one below
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=jiradb
+      - POSTGRES_USER=jirauser
+      - POSTGRES_PASSWORD=jirapassword
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  jira:
+    image: atlassian/jira-software:9.9.1
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - ATL_JDBC_URL=jdbc:postgresql://db/jiradb
+      - ATL_JDBC_USER=jirauser
+      - ATL_JDBC_PASSWORD=jirapassword
+    volumes:
+      - jira-data:/var/atlassian/jira
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+volumes:
+  jira-data:
+  db-data:
+
+# Create directory and create a file and put in below playbook file in control node
+mkdir ~/ansible-playbooks # make a directory called sndible-playbook in home directory
+cd ~/ansible-playbooks # navigate to the directory
+sudo nano deploy_jira.yml # create a file called deploy_jira.yml and paste in ansible playbook file
+
+#copy below code in the file
+
+#Playbook - this playbook deploys docker compose from ~/jira-docker/docker-compose.yml directory
+
+---
+- name: Deploy Jira via Docker Compose on Amazon Linux 2023
+  hosts: webservers
+  become: true
+  vars:
+    jira_project_dir: /opt/jira
+    compose_version: "v2.27.1"
+    compose_url: "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-linux-x86_64"
+
+  tasks:
+    # 1. Install Docker engine
+    - name: Install Docker engine
+      ansible.builtin.dnf:
+        name: docker
+        state: present
+
+    # 2. Ensure Docker service is started and enabled
+    - name: Ensure Docker service is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # 3. Create CLI plugin directory for Docker Compose v2
+    - name: Create CLI plugin directory for Docker Compose v2
+      ansible.builtin.file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: '0755'
+
+    # 4. Install Docker Compose v2 plugin
+    - name: Install Docker Compose v2 plugin
+      ansible.builtin.get_url:
+        url: "{{ compose_url }}"
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: '0755'
+
+    # 5. Create Jira project directory
+    - name: Create Jira project directory
+      ansible.builtin.file:
+        path: "{{ jira_project_dir }}"
+        state: directory
+        mode: '0755'
+
+    # 6. Copy your Compose file from control node to target node
+    - name: Copy Docker Compose file from local to remote
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'HOME') }}/jira-docker/docker-compose.yml"
+        dest: "{{ jira_project_dir }}/docker-compose.yml"
+        mode: '0644'
+
+    # 7. Deploy Jira stack using Docker Compose v2
+    - name: Deploy Jira stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ jira_project_dir }}"
+        state: present
+
+
+
+# Run playbook
+* log into the directory where the playbook is till you see the playbook file then run it using the following command
+"ansible-playbook deploy_jira.yml"
+
+
+# Test if the application is reachable
+* copy one of the work_node pubic_ip then add 8080 as below in brower then search it
+- public_ip:8080
+
+#########################################################################################################
+################################# DYNAMIC INVENTORY ######################################################
+#########################################################################################################
+
+# steps to accomplish this task
+
+1. Create control node with an ec2 full access profile or download the AWS CLI in the control and configure it.
+2. log into the control node and run the following commands:
+
+# login as root user (works for 2023)
+* sudo su -
+
+# change the name of the servers (works for 2023)
+* nano /etc/hostname # label the nodes accordingly "ansible_control", "worker_node_1" snd "worker_node_2"
+* reboot the servers 
+
+# create ansible user in control   node  
+* useradd ansible
+* passwd ansible # pass a password
+* sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config # change password authentication permission to "yes"
+* uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory 
+* sudo systemctl restart sshd # Restart sshd service
+* Add ansible to sudoers group in the directory /etc/sudoers using nano /etc/sudoers then fit in 
+ansible ALL=(ALL) NOPASSWD: ALL in the "no password authentication" line and also ass ansible ALL=(ALL)  ALL
+in the line that line that says "root user runs commands anywhere" 
+
+
+# Install the ansible and other prerequisites
+* while in control node, switch to ansible user then home directory using 
+sudo su ansible 
+cd ~
+# Update OS
+sudo dnf update -y
+
+# Install Ansible and required tools
+sudo dnf install -y ansible-core python3-pip jq awscli
+
+# Install AWS libraries
+python3 -m pip install --user boto3 botocore
+
+# Install Ansible AWS collection
+ansible-galaxy collection install amazon.aws
+
+# Check if Ansible is installed
+ansible --version
+
+Why:
+
+- ``ansible-core`` = core automation engine
+
+- ``boto3/botocore`` = talk to AWS APIs
+
+- ``amazon.aws`` = gives you the aws_ec2 dynamic inventory plugin
+
+- ``jq`` helps debug inventory output
+
+# create worker node then allow ssh between control and worker
+- Create worker node with the tags ``Name: Webservers`` and ``Env: Production``
+- Copy content of your ``.pem`` that downloads in your local machine.
+- Login to Control node, in the ansible user you created, create an ``ssh`` directory, create a file ``.pem`` paste in the key
+
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+cd .ssh/
+# create .pem file and paste content
+sudo nano myteam.pem
+chmod 600 ~/.ssh/myteam.pem
+
+# confirm that using the key, you can connect to worker
+sudo ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
+
+#Run these two commands to remove permission issues when you run above command without sudo
+sudo chown ansible:ansible /home/ansible/.ssh/myteam.pem
+chmod 400 /home/ansible/.ssh/myteam.pem
+
+# Rerun the connection command
+ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
+
+# Create the dynamic inventory file
+create ``~/ansible_aws/inventory/aws_ec2.yml``
+
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - sa-east-1  # change if needed
+
+filters:
+  instance-state-name: running
+  "tag:Name": Webservers
+  "tag:Env": Production
+
+hostnames:
+  - tag:Name
+
+compose:
+  ansible_host: private_ip_address
+
+keyed_groups:
+  - key: tags.Env
+    prefix: tag_Env
+  - key: tags.Name
+    prefix: tag_Name
+
+strict: False
+
+# Create ansible.cfg 
+Create ~/ansible_aws/ansible.cfg
+
+[defaults]
+inventory = ./inventory/aws_ec2.yml
+host_key_checking = False
+collections_paths = ~/.ansible/collections:/usr/share/ansible/collections
+ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+# Create group varaible for connection info
+
+Create ~/ansible_aws/group_vars/tag_Env_Production.yml
+
+ansible_user: ec2-user
+ansible_ssh_private_key_file: /home/ansible/.ssh/myteam.pem
+ansible_python_interpreter: /usr/bin/python3
+
+Why:
+ This tells ansible to connect to all hosts using the .pem key
+
+
+# Verify that Ansible Sees your instances
+ansible-inventory -i ~/ansible_aws/inventory/aws_ec2.yml --list
+or 
+ansible-inventory -i ~/ansible_aws/inventory/aws_ec2.yml --list --yaml
+
+
+You should see the discovered EC2 instances grouped like:
+
+- ``tag_Env_Production``
+
+- ``tag_Name_webservers``
+
+If not, check your:
+
+- AWS region
+
+- Tags spelling
+
+- IAM permissions
+
+
+# Ping to Test Connection
+ansible -i ~/ansible_aws/inventory/aws_ec2.yml 'tag_Name_Webservers:&tag_Env_Production' -m ping -u ec2-user --private-key /home/ansible/.ssh/myteam.pem -vvv
+
+
+If you get “UNREACHABLE”, check:
+
+- SSH key permissions
+
+- Security group inbound SSH rules
+
+- Correct username (ec2-user)
+
+
+
+# Create and run a simple playbook
+Create ~/ansible_aws/playbooks/configure-webservers.yml
+
+---
+- name: Configure Production Webservers
+  hosts: "tag_Name_Webservers:&tag_Env_Production"
+  gather_facts: yes
+  become: yes
+  vars:
+    ansible_user: ec2-user
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Ensure Nginx is installed
+      ansible.builtin.package:
+          name: nginx
+          state: present
+
+    - name: Start Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+
+
+Run it:
+cd ansible_aws
+ansible-playbook -i inventory/aws_ec2.yml playbooks/configure-webservers.yml   -u ec2-user --private-key /home/ansible/.ssh/myteam.pem -vvv
+
+if you see errors like this when running the plaaybook:
+- [WARNING]: Collection amazon.aws does not support Ansible version 2.15.3
+- Python interpreter discovery fallback (unsupported Linux distribution: amzn)
+
+consider doing this before rerunning the playbook:
+- ansible-galaxy collection install amazon.aws:>=5.5.0 --force (Amazon Linux 2023 + Ansible 2.15.x sometimes triggers warnings with the amazon.aws collection)
+- Then check ``ansible --version``
+If it’s below 2.16, consider upgrading Ansible too:
+- pip install --upgrade ansible
+
+
+#verify results 
+Copy public Ip of workernode and paste on browser
+
+
+
+
