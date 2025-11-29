@@ -205,6 +205,8 @@ sudo nano deploy_jira.yml # create a file called deploy_jira.yml and paste in an
         state: present
 
 
+# Install docker community
+ansible-galaxy collection install community.docker --force
 
 # Run playbook
 * log into the directory where the playbook is till you see the playbook file then run it using the following command
@@ -419,6 +421,7 @@ If it’s below 2.16, consider upgrading Ansible too:
 
 #verify results 
 Copy public Ip of workernode and paste on browser
+
 
 
 
