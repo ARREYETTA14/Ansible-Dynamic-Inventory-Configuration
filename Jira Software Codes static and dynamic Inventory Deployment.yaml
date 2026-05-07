@@ -20,8 +20,7 @@
 * sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config # change password authentication permission to "yes"
 * Uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory 
 * sudo systemctl restart sshd # Restart sshd service
-* Add ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers, then fit in 
-ansible ALL=(ALL) NOPASSWD: ALL in the "no password authentication" line, and also add ansible ALL=(ALL)  ALL
+* Add ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers. Add *Ansible user to the %wheel group* then fit in 
 In the line that says "root user runs commands anywhere" 
 * Once you are done doing all these in all 3 nodes, try SSH into the workernodes via the ansible user in the control node by using
 This command "ssh ansible@privateIP"- first, switch to the ansible user "sudo su ansible"
