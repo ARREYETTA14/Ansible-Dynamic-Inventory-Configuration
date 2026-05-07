@@ -4,28 +4,27 @@
 
 # steps to accomplish this task
 
-1. start 3 instnces, label one as "Ansible_control", and the other two as "worker_node_1" and "worker_node_2" respectively preferably t3.medium
-2. log into the ansible node and the other nodes then run the following commands:
+1. Start 3 instances, label one as "Ansible_control", and the other two as "worker_node_1" and "worker_node_2" respectively, preferably t3.medium
+2. Log into the Ansible node and the other nodes, then run the following commands:
 
 # login as root user (works for 2023)
-* sudo su -
+* sudo su -   (You must not switch to root; even ec2-user can handle everything)
 
 # change the name of the servers (works for 2023)
-* nano /etc/hostname # label the nodes accordingly "ansible_control", "worker_node_1" 
+* nano /etc/hostname or sudo hostnamectl set-hostname <name> # label the nodes accordingly "ansible_control", "worker_node_1" 
 * reboot # reboots the servers 
 
 # create a common user across the nodes (works for 2023)
 * useradd ansible
 * passwd ansible # pass a password
-* sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config # change password authentication permission to "yes"
-* Uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory 
+* sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config - (Do this manually cause sometimes, the one-line command doesn't work) # change password authentication permission to "yes"
+* Uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory  ____ (step not necessary)
 * sudo systemctl restart sshd # Restart sshd service
-* Add ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers. Add *Ansible user to the %wheel group* then fit in 
-In the line that says "root user runs commands anywhere" 
+* Add Ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers by adding *Ansible user to the %wheel group*. Then, fit the Ansible user in the line that says "root user runs commands anywhere". Under the part that talks about adding a user to a %wheel for "NOPASSWD", add the user there as well, such that when the user runs commands using sudo, they won't be asked to pass a password for the command to be executed.
 * Once you are done doing all these in all 3 nodes, try SSH into the workernodes via the ansible user in the control node by using
 This command "ssh ansible@privateIP"- first, switch to the ansible user "sudo su ansible"
 
-# Create a keypair in the Ansible control node and copy in the worker nodes (works for 2023 with a few changes)
+# Create a keypair in the Ansible control node and copy it to the worker nodes - Allows authentication without a password (works for 2023 with a few changes)
 * while in the control node, switch to the ansible user, then home directory using 
 sudo su ansible 
 cd ~
@@ -38,7 +37,7 @@ cd ~
 
 ### Create an inventory file called hosts in the /etc/ansible directory of root and put the following code
 [webservers]
-10.0.1.10 ## pass the private or public IP of worker node(s)
+172.31.11.72 ## pass the private or public IP of worker node(s)
 
 [webservers:vars]
 ansible_user=ansible
@@ -236,9 +235,9 @@ ansible-galaxy collection install community.docker --force
 * useradd ansible
 * passwd ansible # pass a password
 * sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config # change password authentication permission to "yes"
-* Uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory 
+* Uncomment "PermitRootLogin" in the /etc/ssh/sshd_config directory  ___ step necessary
 * sudo systemctl restart sshd # Restart sshd service
-* Add ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers, then fit in 
+* Add Ansible to the sudoers group in the directory /etc/sudoers using nano /etc/sudoers, then fit in 
 ansible ALL=(ALL) NOPASSWD: ALL in the "no password authentication" line and also add ansible ALL=(ALL)  ALL
 In the line that says "root user runs commands anywhere" 
 
