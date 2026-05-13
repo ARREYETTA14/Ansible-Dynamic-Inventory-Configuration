@@ -301,6 +301,7 @@ plugin: amazon.aws.aws_ec2
 regions:
   - sa-east-1  # change if needed
 
+# Allows you to pick instances with Name= Webservers and Env=Production
 filters:
   instance-state-name: running
   "tag:Name": Webservers
@@ -313,9 +314,9 @@ compose:
   ansible_host: private_ip_address
 
 keyed_groups:
-  - key: tags.Env
+  - key: ec2_tags.Env
     prefix: tag_Env
-  - key: tags.Name
+  - key: ec2_tags.Name
     prefix: tag_Name
 
 strict: False
@@ -380,7 +381,7 @@ If you get “UNREACHABLE”, check:
 
 # Create and run a simple playbook
 Create ~/ansible_aws/playbooks/configure-webservers.yml
-
+## change hosts from "tag_Name_Webservers:&tag_Env_Production" to "tag_Env_Production" for playbook to seploy in servers with only Env=Production
 ---
 - name: Configure Production Webservers
   hosts: "tag_Name_Webservers:&tag_Env_Production"
