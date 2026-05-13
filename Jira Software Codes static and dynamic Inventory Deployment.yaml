@@ -273,7 +273,7 @@ Why:
 
 # create worker node, then allow SSH between control and worker
 - Create worker node with the tags ``Name: Webservers`` and ``Env: Production``
-- Copy the content of your ``.pem`` that downloads to your local machine.
+- Copy the content of your workernode ``.pem`` that downloads to your local machine.
 - Log in to the Control node, in the ansible user you created, create an ``ssh`` directory, create a file ``.pem``, paste in the key
 
 mkdir -p ~/.ssh
@@ -288,7 +288,7 @@ sudo ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
 
 #Run these two commands to remove permission issues when you run the above command without sudo
 sudo chown ansible:ansible /home/ansible/.ssh/myteam.pem
-chmod 400 /home/ansible/.ssh/myteam.pem # or leave it as is. This gives only write permissions to user ansible
+chmod 400 /home/ansible/.ssh/myteam.pem # or leave it as is. This gives only write permissions to the ansible user
 
 # Rerun the connection command
 ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
