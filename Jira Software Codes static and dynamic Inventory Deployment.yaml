@@ -294,7 +294,7 @@ chmod 400 /home/ansible/.ssh/myteam.pem # or leave it as is. This gives only wri
 ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
 
 # Create the aws_ec2.yml inventory file: The power of dynamic lies in the filter section of this file
-create ``~/ansible_aws/inventory/aws_ec2.yml``
+create ``~/ansible_aws/inventory/aws_ec2.yml`` ## short way, sudo mkdir -p ~/ansible_aws/inventory && sudo nano ~/ansible_aws/inventory/aws_ec2.yml
 
 plugin: amazon.aws.aws_ec2
 
