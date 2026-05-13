@@ -293,7 +293,7 @@ chmod 400 /home/ansible/.ssh/myteam.pem # or leave it as is. This gives only wri
 # Rerun the connection command
 ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
 
-# Create the aws_ec2.yml inventory file
+# Create the aws_ec2.yml inventory file: The power of dynamic lies in the filter section of this file
 create ``~/ansible_aws/inventory/aws_ec2.yml``
 
 plugin: amazon.aws.aws_ec2
@@ -301,7 +301,7 @@ plugin: amazon.aws.aws_ec2
 regions:
   - sa-east-1  # change if needed
 
-# Allows you to pick instances with Name= Webservers and Env=Production
+# Allows you to pick instances with Name= Webservers and Env=Production 
 filters:
   instance-state-name: running
   "tag:Name": Webservers
@@ -377,11 +377,9 @@ If you get “UNREACHABLE”, check:
 
 - Correct username (ec2-user)
 
-
-
 # Create and run a simple playbook
 Create ~/ansible_aws/playbooks/configure-webservers.yml
-## change hosts from "tag_Name_Webservers:&tag_Env_Production" to "tag_Env_Production" for playbook to seploy in servers with only Env=Production
+## change hosts from "tag_Name_Webservers:&tag_Env_Production" to "tag_Env_Production" for playbook to deploy in servers with only Env=Production
 ---
 - name: Configure Production Webservers
   hosts: "tag_Name_Webservers:&tag_Env_Production"
