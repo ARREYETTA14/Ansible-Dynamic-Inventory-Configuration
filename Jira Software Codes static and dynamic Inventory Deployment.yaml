@@ -281,19 +281,19 @@ chmod 700 ~/.ssh
 cd .ssh/
 # create .pem file and paste content
 sudo nano myteam.pem
-chmod 600 ~/.ssh/myteam.pem
+chmod 600 ~/.ssh/myteam.pem # streamlines, rw permission only for user, or you can leave it as is, if you want
 
 # confirm that using the key, you can connect to the worker
 sudo ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
 
 #Run these two commands to remove permission issues when you run the above command without sudo
 sudo chown ansible:ansible /home/ansible/.ssh/myteam.pem
-chmod 400 /home/ansible/.ssh/myteam.pem
+chmod 400 /home/ansible/.ssh/myteam.pem # or leave it as is. This gives only write permissions to user ansible
 
 # Rerun the connection command
 ssh -i ~/.ssh/myteam.pem ec2-user@<worker-private-ip>
 
-# Create the dynamic inventory file
+# Create the aws_ec2.yml inventory file
 create ``~/ansible_aws/inventory/aws_ec2.yml``
 
 plugin: amazon.aws.aws_ec2
@@ -307,7 +307,7 @@ filters:
   "tag:Env": Production
 
 hostnames:
-  - tag:Name
+  - instance-id
 
 compose:
   ansible_host: private_ip_address
@@ -320,14 +320,14 @@ keyed_groups:
 
 strict: False
 
-# Create Ansible.cfg 
+# Create Ansible.cfg file
 Create ~/ansible_aws/ansible.cfg
 
 [defaults]
 inventory = ./inventory/aws_ec2.yml
 host_key_checking = False
 collections_paths = ~/.ansible/collections:/usr/share/ansible/collections
-ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+ansible_ssh_common_args = -o StrictHostKeyChecking=no
 
 # Create group variable for connection info
 
@@ -345,6 +345,8 @@ Why:
 ansible-inventory -i ~/ansible_aws/inventory/aws_ec2.yml --list
 or 
 ansible-inventory -i ~/ansible_aws/inventory/aws_ec2.yml --list --yaml
+or 
+ansible-inventory -i ~/ansible_aws/inventory/aws_ec2.yml --graph
 
 
 You should see the discovered EC2 instances grouped like:
