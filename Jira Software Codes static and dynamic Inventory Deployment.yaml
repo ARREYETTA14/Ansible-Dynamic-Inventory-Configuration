@@ -330,7 +330,7 @@ host_key_checking = False
 collections_paths = ~/.ansible/collections:/usr/share/ansible/collections
 ansible_ssh_common_args = -o StrictHostKeyChecking=no
 
-# Create group variable for connection info
+# Create group variable for connection info ## not very necessary since we pass the variable in the playbook ## so do without it subsequently
 
 Create ~/ansible_aws/group_vars/tag_Env_Production.yml
 
