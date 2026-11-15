@@ -14,16 +14,16 @@ Give the Ansible-Master node the '``EC2FullAccess``' permission.
 **3. SSH into Ansible-Master:**
 - Update the server:
 ```bash
-sudo yum update -y
+sudo dnf update -y
 ```
 - Check the version of Python. If it is not version 3 or above, run the following command to install it:
 ```bash
 python3 --version
-sudo yum install python3 -y
+sudo dnf install python3 -y
 ```
 - Install PIP:
 ```bash
-sudo yum install python3-pip -y
+sudo dnf install python3-pip -y
 ```
 **4. Create Directory for Inventory:**
 - Create a directory where the inventory file will reside:
@@ -112,17 +112,17 @@ sudo nano test.yml
   become: yes
   tasks:
     - name: Upgrade all packages
-      ansible.builtin.yum:
+      dnf:
         name: '*'
         state: latest
 
     - name: Install the latest version of Apache
-      ansible.builtin.yum:
+      dnf:
         name: httpd
         state: latest
 
     - name: Start httpd or Apache
-      ansible.builtin.systemd:
+      service:
         state: started
         name: httpd
 
@@ -145,9 +145,9 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
 **Fix Python Version Warning:**
    - Upgrade Python:
      ```bash
-     sudo yum update -y
+     sudo dnf update -y
      sudo amazon-linux-extras enable python3.8
-     sudo yum install python3.8
+     sudo dnf install python3.8
      ```
    - Verify the Installation:
      ```bash
