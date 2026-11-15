@@ -60,6 +60,8 @@ nano ansible.cfg
 ```bash
 [defaults]
 host_key_checking = False
+deprecation_warnings = False
+interpreter_python = auto_silent
 ```
 **6. Create the Dynamic Inventory File (aws_ec2.yaml)**
 - Create the ``aws_ec2.yaml`` file inside your ``inventory`` folder:
@@ -101,14 +103,21 @@ ansible-inventory -i ~/ansible-project/inventory/aws_ec2.yaml --graph
 ```
 ![image](https://github.com/user-attachments/assets/cfb15e6c-31ba-4d80-a63c-8c23c01d2907)
 
-**9. Ping Instances:**
+**9.  Add Workernode Private Key and Ping Worker Nodes**
+When you created your worker nodes in AWS, you selected or downloaded an AWS Key Pair (a ``.pem`` file). Because Ansible needs that exact private key to log into your worker nodes over SSH, you must copy its contents onto your ``Ansible-Master`` node.
 
-- Create a keypair file, paste in the keypairs created for your worker nodes, and run the following command (assuming you created a keypair file called ```workernode.pem```):
+- Inside your project folder on ``Ansible-Master``, create an empty key file named ``workernode.pem``:
 ```bash
-ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=workernode.pem --user ec2-user
+sudo nano ~/ansible-project/workernode.pem
 ```
-- If you notice that only one server is pinging, and it takes time to receive a ping from the other instance, type “yes” and hit enter to solve the issue. To avoid similar issues in the future, navigate to the ```ansible.cfg``` file and uncomment ```host_key_checking = False```. This will instruct Ansible to skip host key verification for your instances.
-
+- Open the ``.pem`` private key file on your computer using a text editor (like Notepad), copy all of its contents (including the ``-----BEGIN RSA PRIVATE KEY-----`` and ``-----END RSA PRIVATE KEY-----`` lines), and paste them into the ``nano`` terminal window.
+- Save and close the file.
+- Run the ping command so Ansible uses this private key to connect to your discovered worker nodes as ``ec2-user``. Navigate to wehre your ``keypair`` is located:
+- 
+```bash
+cd ~/ansible-project
+ansible aws_ec2 -i inventory/aws_ec2.yaml -m ping --private-key=~/workernode.pem --user ec2-user
+```
 **10. Rerun the Test Code:**
 - You should see successful ping responses.
 ![image](https://github.com/user-attachments/assets/681a03c5-586f-4374-8d48-1f133f131e04)
@@ -147,88 +156,14 @@ sudo nano test.yml
 ```
 **Execute the Playbook:**
 ```bash
-ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
+ansible-playbook -i inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=~/workernode.pem --user ec2-user
 ```
 Or:
 ```bash
-ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
+ansible-playbook -i inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=~/workernode.pem --user ec2-user
 ```
-**12. Fixing Potential Errors:**
-If you encounter an error message like, “ERROR! The ec2 dynamic inventory plugin requires boto3 and botocore,” it may be due to Ansible using Python 2.7 instead of Python 3.x. To resolve this:
 
-**Fix Python Version Warning:**
-   - Upgrade Python:
-     ```bash
-     sudo dnf update -y
-     sudo amazon-linux-extras enable python3.8
-     sudo dnf install python3.8
-     ```
-   - Verify the Installation:
-     ```bash
-     python3.8 --version
-     ```
-   - Set Python 3.8 as Default (if needed):
-     ```bash
-     sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
-     sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2
-     sudo alternatives --config python3
-     ```
-   - Update pip for Python 3.8:
-     ```bash
-     sudo python3.8 -m ensurepip --upgrade
-     sudo python3.8 -m pip install --upgrade pip
-     ```
-   - Ensure Ansible Uses Python 3.8:
-     You may need to create or update the Python interpreter in your ```ansible.cfg``` file:
-     ```ini
-     [defaults]
-     interpreter_python = /usr/bin/python3.8
-     ```
-**Upgrade Ansible to Resolve AWS Collection Compatibility Warning:**
-   - Uninstall the Old Version of Ansible:
-     ```bash
-     sudo python3 -m pip uninstall ansible
-     ```
-   - Install the Latest Version of Ansible Using pip:
-     ```bash
-     sudo python3.8 -m pip install ansible
-     ```
-   - Verify the Upgrade:
-     ```bash
-     ansible --version
-     ```
-**Upgrade boto3 and botocore to Recommended Versions:**
-   - Upgrade Both Packages Using pip for Python 3.8:
-     ```bash
-     sudo python3.8 -m pip install --upgrade boto3 botocore
-     ```
-   - Verify the Version:
-     ```bash
-     python3.8 -m pip show boto3 botocore
-     ```
-**Verify Everything is Set Correctly:**
-   - After making these upgrades, run the following commands:
-     Check Ansible version:
-     ```bash
-     ansible --version
-     ```
-     Check Python version:
-     ```bash
-     python3 --version
-     ```
-     Check boto3 and botocore versions:
-     ```bash
-     python3.8 -m pip show boto3 botocore
-     ```
-**13. Test Your Playbooks once again:**
-```bash
-ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
-```
-Or:
-```bash
-ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
-```
-**18. Verify Playbook Execution in Workernodes:**
+**12. Verify Playbook Execution in Workernodes:**
 - Lastly, test if your playbook was executed in the worker nodes by copying the public IP addresses of the nodes and pasting them into a web browser.
 
   ![image](https://github.com/user-attachments/assets/06b3edf5-94f3-49cb-9c18-c23f29fd6f14)
