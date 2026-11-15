@@ -171,6 +171,19 @@ ansible-playbook -i inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key
   ![image](https://github.com/user-attachments/assets/de12b036-5d6c-4920-83f7-cf7b56888e59)
 
 
-
+**13. Terminate instances**
+```yaml
+---
+- name: Terminate EC2 Instances
+  hosts: tag_Env_Dev
+  gather_facts: false
+  tasks:
+    - name: Permanently terminate the EC2 instances
+      amazon.aws.ec2_instance:
+        region: sa-east-1
+        instance_ids: "{{ instance_id }}"
+        state: absent
+      delegate_to: localhost
+```
 
 
