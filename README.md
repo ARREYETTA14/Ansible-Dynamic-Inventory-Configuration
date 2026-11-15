@@ -10,8 +10,9 @@ Dynamic Inventory Configuration in AWS *(3 Amazon Linux 2 instances: 1 Master No
 
 ![image](https://github.com/user-attachments/assets/4cf67fb4-5e01-4b05-9d4d-9fc7af5665bb)
 
-**2. Assign Permissions:**
-Give the Ansible-Master node the '``EC2FullAccess``' permission.
+**2. Assign IAM Permissions to Master Node:**
+- In the AWS IAM Console, create an IAM Role for **EC2** and attach the ``AmazonEC2ReadOnlyAccess`` policy (or ``AmazonEC2FullAccess`` if you plan to create/terminate instances via Ansible later).
+- Attach this IAM Role to your Ansible-Master EC2 instance
 
 **3. SSH into Ansible-Master:**
 - Update the server:
@@ -27,18 +28,45 @@ sudo dnf install python3 -y
 ```bash
 sudo dnf install python3-pip -y
 ```
-**4. Create Directory for Inventory:**
-- Create a directory where the inventory file will reside:
+
+**4. Install Ansible, Boto3, and the AWS Collection (In Proper Order)**
+- Install Ansible Core directly using:
 ```bash
-sudo mkdir -p /opt/ansible/inventory
-cd /opt/ansible/inventory
+sudo dnf install ansible-core -y
 ```
-**5. Create the ```aws_ec2.yaml``` File:**
-- In this directory, create the ```aws_ec2.yaml``` file to filter required instances for task execution:
+- Verify that Ansible is installed:
+```bash
+ansible --version
+```
+- Install the AWS Python libraries
+```bash
+pip3 install boto3 botocore
+```
+- Install the official Amazon AWS collection for Ansible:
+```bash
+ansible-galaxy collection install amazon.aws
+```
+**5. Create Project Workspace and Disable SSH Key Prompts**
+- Create your project and inventory folders, then move into your project folder:
+```bash
+mkdir -p ~/ansible-project/inventory
+cd ~/ansible-project
+```
+- Create a local ``ansible.cfg`` file so Ansible skips the ``"Are you sure you want to continue connecting (yes/no)?"`` prompt for new EC2 servers:
+```bash
+nano ansible.cfg
+```
+- Paste the following two lines, then save and exit
+```bash
+[defaults]
+host_key_checking = False
+```
+**6. Create the Dynamic Inventory File (aws_ec2.yaml)**
+- Create the ``aws_ec2.yaml`` file inside your ``inventory`` folder:
 ```bash
 sudo nano aws_ec2.yaml
 ```
-**6. Add the Following Code to ```aws_ec2.yaml```:**
+**7. Add the Following Code to ```aws_ec2.yaml```:**
 ```yaml
 ---
 plugin: amazon.aws.aws_ec2
@@ -61,35 +89,19 @@ compose:
   # Set ansible_host to use the private IP for SSH connections.
   ansible_host: private_ip_address
 ```
-**7. Go Back to Home Directory:**
+
+**8. Test AWS Environment Access:**
 ```bash
-cd
-```
-**8. Install Boto and Boto3:**
-```bash
-pip3 install boto3 -y
-pip3 install botocore
-```
-**9. Install the Amazon AWS Collection:**
-```bash
-ansible-galaxy collection install amazon.aws
-```
-**10. Install Ansible:**
-```bash
-sudo amazon-linux-extras install ansible2 -y
-```
-**11. Test AWS Environment Access:**
-```bash
-ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --list
+ansible-inventory -i ~/ansible-project/inventory/aws_ec2.yaml --list
 ```
 ![image](https://github.com/user-attachments/assets/47dae9a0-90a9-49ec-8c7e-a8c2b98b0790)
 
 ```bash
-ansible-inventory -i /opt/ansible/inventory/aws_ec2.yaml --graph
+ansible-inventory -i ~/ansible-project/inventory/aws_ec2.yaml --graph
 ```
 ![image](https://github.com/user-attachments/assets/cfb15e6c-31ba-4d80-a63c-8c23c01d2907)
 
-**12. Ping Instances:**
+**9. Ping Instances:**
 
 - Create a keypair file, paste in the keypairs created for your worker nodes, and run the following command (assuming you created a keypair file called ```workernode.pem```):
 ```bash
@@ -97,11 +109,11 @@ ansible aws_ec2 -i /opt/ansible/inventory/aws_ec2.yaml -m ping --private-key=wor
 ```
 - If you notice that only one server is pinging, and it takes time to receive a ping from the other instance, type “yes” and hit enter to solve the issue. To avoid similar issues in the future, navigate to the ```ansible.cfg``` file and uncomment ```host_key_checking = False```. This will instruct Ansible to skip host key verification for your instances.
 
-**13. Rerun the Test Code:**
+**10. Rerun the Test Code:**
 - You should see successful ping responses.
 ![image](https://github.com/user-attachments/assets/681a03c5-586f-4374-8d48-1f133f131e04)
 
-**14. Create and Execute a Playbook:**
+**11. Create and Execute a Playbook:**
 - At the host level of the playbook, specify the tag group under which your desired instances are located (e.g., ```tag_Env_Dev```):
 ```bash
 sudo nano test.yml
@@ -141,7 +153,7 @@ Or:
 ```bash
 ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
 ```
-**15. Fixing Potential Errors:**
+**12. Fixing Potential Errors:**
 If you encounter an error message like, “ERROR! The ec2 dynamic inventory plugin requires boto3 and botocore,” it may be due to Ansible using Python 2.7 instead of Python 3.x. To resolve this:
 
 **Fix Python Version Warning:**
@@ -208,7 +220,7 @@ If you encounter an error message like, “ERROR! The ec2 dynamic inventory plug
      ```bash
      python3.8 -m pip show boto3 botocore
      ```
-**16. Test Your Playbooks once again:**
+**13. Test Your Playbooks once again:**
 ```bash
 ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
 ```
@@ -216,7 +228,7 @@ Or:
 ```bash
 ansible-playbook -i /opt/ansible/inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
 ```
-**17. Verify Playbook Execution in Workernodes:**
+**18. Verify Playbook Execution in Workernodes:**
 - Lastly, test if your playbook was executed in the worker nodes by copying the public IP addresses of the nodes and pasting them into a web browser.
 
   ![image](https://github.com/user-attachments/assets/06b3edf5-94f3-49cb-9c18-c23f29fd6f14)
