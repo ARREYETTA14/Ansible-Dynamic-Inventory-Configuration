@@ -2,6 +2,8 @@
 Dynamic Inventory Configuration in AWS *(3 Amazon Linux 2 instances: 1 Master Node and 2 Worker Nodes)*
 
 **1. Create Instances:**
+- **Ansible-Master Security Group**: Allow inbound **SSH (Port 22)** from your IP address.
+- **Worker Nodes Security Group**: Allow inbound **SSH (Port 22)** from the Ansible-Master Security Group, and allow inbound **HTTP (Port 80)** from 0.0.0.0/0 so you can view the website in your browser later.
 - Launch three instances: one named “Ansible-Master,” the second “Worker-node-2,” and the third “Worker-node-3.”
 - Add additional tags to the worker nodes as ```Env: Dev```.
   **Note:** Ensure the Security Group (SG) of the worker nodes allows TCP traffic from the SG of the Ansible-Master node.
