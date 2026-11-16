@@ -93,8 +93,14 @@ compose:
 ```
 
 **8. Test AWS Environment Access:**
+while in home directory
 ```bash
 ansible-inventory -i ~/ansible-project/inventory/aws_ec2.yaml --list
+```
+or 
+while in the ansible-project directory
+```bash
+ansible-inventory -i inventory/aws_ec2.yaml --list
 ```
 ![image](https://github.com/user-attachments/assets/47dae9a0-90a9-49ec-8c7e-a8c2b98b0790)
 
