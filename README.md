@@ -162,11 +162,11 @@ sudo nano test.yml
 ```
 **Execute the Playbook:**
 ```bash
-ansible-playbook -i inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=~/workernode.pem --user ec2-user
+ansible-playbook -i inventory/aws_ec2.yaml -l aws_ec2 test.yml --private-key=workernode.pem --user ec2-user
 ```
 Or:
 ```bash
-ansible-playbook -i inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=~/workernode.pem --user ec2-user
+ansible-playbook -i inventory/aws_ec2.yaml -l tag_Env_Dev test.yml --private-key=workernode.pem --user ec2-user
 ```
 
 **12. Verify Playbook Execution in Workernodes:**
