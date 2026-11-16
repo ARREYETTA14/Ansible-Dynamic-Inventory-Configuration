@@ -1,5 +1,5 @@
 # Ansible-Dynamic-Inventory-Configuration
-Dynamic Inventory Configuration in AWS *(3 Amazon Linux 2 instances: 1 Master Node and 2 Worker Nodes)*
+Dynamic Inventory Configuration in AWS *(3 Amazon Linux 2023 instances: 1 Master Node and 2 Worker Nodes)*
 
 **1. Create Instances:**
 - **Ansible-Master Security Group**: Allow inbound **SSH (Port 22)** from your IP address.
