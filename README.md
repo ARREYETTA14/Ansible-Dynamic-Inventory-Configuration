@@ -54,7 +54,7 @@ cd ~/ansible-project
 ```
 - Create a local ``ansible.cfg`` file so Ansible skips the ``"Are you sure you want to continue connecting (yes/no)?"`` prompt for new EC2 servers:
 ```bash
-nano ansible.cfg
+sudo nano ansible.cfg
 ```
 - Paste the following two lines, then save and exit
 ```bash
