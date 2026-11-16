@@ -49,7 +49,7 @@ ansible-galaxy collection install amazon.aws
 **5. Create Project Workspace and Disable SSH Key Prompts**
 - Create your project and inventory folders, then move into your project folder:
 ```bash
-mkdir -p ~/ansible-project/inventory
+sudo mkdir -p ~/ansible-project/inventory
 cd ~/ansible-project
 ```
 - Create a local ``ansible.cfg`` file so Ansible skips the ``"Are you sure you want to continue connecting (yes/no)?"`` prompt for new EC2 servers:
