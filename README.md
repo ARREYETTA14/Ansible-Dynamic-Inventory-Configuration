@@ -122,7 +122,7 @@ sudo nano ~/ansible-project/workernode.pem
 - 
 ```bash
 cd ~/ansible-project
-ansible aws_ec2 -i inventory/aws_ec2.yaml -m ping --private-key=~/workernode.pem --user ec2-user
+ansible aws_ec2 -i inventory/aws_ec2.yaml -m ping --private-key=workernode.pem --user ec2-user
 ```
 **10. Rerun the Test Code:**
 - You should see successful ping responses.
